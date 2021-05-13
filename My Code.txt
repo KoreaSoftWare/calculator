@@ -1,0 +1,108 @@
+/*
+조원 프로젝트의 주제는 바로 계산기다.
+일반 사칙연산 부터 원리합계/시그마, 미분까지
+이 중에서 미분 구현을 담당했다.
+
+이 코드의 전체적인 해석을 하자면
+단순히 방정식 영역을 배열의 위치로 지정을 한 것이다.
+미지수 앞에는 전부 개수 영역,
+미지수 뒤부터 연산자 전 까지는 지수 영역이다.
+이 영역의 값을 정수화 시켜서 계산을 한 다음 
+결과 값에 넣는 형식이다.
+*/
+
+// 강성원
+int differentiation() {
+	int p = 0; //위치값
+	
+	char equation[500]; //방정식 입력
+	char result[500]; //미분 결과
+	
+	int s_number = 0, e_number = 0, s_expo = 0, e_expo = 0; //s_number, e_number는 개수고 s_expo, e_expo는 지수의 위치값
+	int number = 0, expo = 0, check = 0, index = 0; //check는 지수 위치 여부
+
+	printf("방정식을 입력하세요! (문자 옆에 숫자는 제곱, 문자의 대소문자는 구분X)\n");
+	scanf("%s", equation); 
+
+	while (equation[p] != NULL) {
+		if (equation[p] >= '0' && equation[p] <= '9') { //숫자를 발견 하였을 경우
+			switch (check) {//지수인 경우와 개수인 경우를 따로 본다.
+			case 1:
+				expo = (equation[p] - '0') + (expo * 10); //계산을 위해 정수 형태로 저장한다.
+				break;
+			default:
+				number = (equation[p] - '0') + (number * 10);
+				break;
+			}
+		}
+
+		if (equation[p] >= 'A' && equation[p] <= 'Z' || equation[p] >= 'a' && equation[p] <= 'z') {//만약 문자를 만났을 경우
+			check = 1;
+			e_number = p - 1;
+			s_expo = p + 1; //지수 영역 시작
+		}
+
+		if (equation[p + 1] == '+' || equation[p + 1] == '-' || equation[p + 1] == NULL && check == 1) {//연산자를 만났을 경우
+			if (expo == 0) expo = 1; //숫자가 없으면 1
+			if (number == 0) number = 1;
+			
+			e_expo = p;
+			number *= expo; //미분 계산법에 따라 수행
+			
+			expo -= 1;
+			check = 0;
+
+			int point = index;
+
+			/*
+			미분을 하면 개수와 지수의 크기가 변하므로
+			그 길이에 맞춰 result배열에 넣는다.
+			*/
+
+			int tmp = number; //여기는 개수 영역
+
+			while (tmp != 0) { //길이 측정
+				tmp /= 10;
+				index++;
+			}
+
+			for (int i = index - 1; i >= point; i--) {
+				result[i] = (number % 10) + '0';
+				number /= 10;
+			}
+
+			if (expo == 0) return; //여기는 미쳐 지우지 못했다.
+
+			result[index++] = equation[e_number + 1]; //미지수 넣기
+
+			point = index;
+
+			tmp = expo; //다음은 지수 영역
+
+			while (tmp != 0) {
+				tmp /= 10;
+				index++;
+			}
+
+			for (int i = index - 1; i >= point; i--) { //포인트(미지수 뒤에)까지 넣기
+				if (expo == 1) {
+					index--;
+					break;
+				}
+				result[i] = (expo % 10) + '0';
+				expo /= 10;
+			}
+
+			result[index++] = equation[e_expo + 1];
+			
+			expo = 0;
+			number = 0;
+			s_number = p + 1; 다 끝나면 다음 차수로 넘어간다.
+		}
+
+		p++; //한 칸 이동
+	}
+	printf("%s", result); //마지막 결과를 출력한다.
+
+	return 0;
+}
